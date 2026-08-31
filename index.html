@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>不帶羅盤的風水師｜王旭 Neo</title>
+<meta name="description" content="不算命，只觀察。讓我看你房間三秒——三十秒自測，看看你的房間替你記了什麼帳。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#EFE7D6;
+  --paper-2:#E7DCC7;
+  --ink:#23201C;
+  --ink-2:#544C40;
+  --ink-3:#867C6A;
+  --rule:#D2C6AD;
+  --seal:#9B2C22;
+  --seal-ink:#FFF6E9;
+  --shadow:rgba(35,32,28,.13);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#191713;
+    --paper-2:#221F19;
+    --ink:#EBE3D1;
+    --ink-2:#C0B6A2;
+    --ink-3:#8D8472;
+    --rule:#3B352B;
+    --seal:#C9584A;
+    --seal-ink:#191713;
+    --shadow:rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#191713;
+  --paper-2:#221F19;
+  --ink:#EBE3D1;
+  --ink-2:#C0B6A2;
+  --ink-3:#8D8472;
+  --rule:#3B352B;
+  --seal:#C9584A;
+  --seal-ink:#191713;
+  --shadow:rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  line-height:1.8;font-size:16px;-webkit-font-smoothing:antialiased;
+}
+.page{max-width:430px;margin:0 auto;padding:0 20px 56px}
+
+/* ── 抬頭 ── */
+header{padding:38px 0 26px;text-align:center;position:relative}
+.frame{
+  position:absolute;inset:14px 0 0;border:1px solid var(--seal);opacity:.35;
+  pointer-events:none;
+}
+.frame::before,.frame::after{
+  content:"";position:absolute;width:11px;height:11px;border:2px solid var(--seal);
+}
+.frame::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.frame::after{top:-1px;right:-1px;border-left:0;border-bottom:0}
+.kicker{
+  font-family:"Noto Serif TC",serif;font-size:12px;letter-spacing:.45em;
+  color:var(--seal);margin:0 0 12px;padding-left:.45em;
+}
+h1{
+  font-family:"Noto Serif TC",serif;font-weight:900;
+  font-size:31px;line-height:1.3;margin:0 0 8px;letter-spacing:.04em;
+}
+.who{font-size:13.5px;color:var(--ink-3);margin:0;letter-spacing:.06em}
+.creed{
+  font-family:"Noto Serif TC",serif;font-size:15px;color:var(--ink-2);
+  margin:16px 0 0;letter-spacing:.08em;
+}
+
+/* ── 自測 ── */
+.quiz{margin:30px 0 0}
+.q-lead{
+  font-family:"Noto Serif TC",serif;font-size:20px;line-height:1.55;
+  margin:0 0 6px;text-wrap:balance;
+}
+.q-sub{font-size:13.5px;color:var(--ink-3);margin:0 0 20px}
+
+.items{display:flex;flex-direction:column;gap:9px;list-style:none;padding:0;margin:0}
+.item{position:relative}
+.item input{position:absolute;opacity:0;width:0;height:0}
+.item label{
+  display:flex;gap:13px;align-items:flex-start;
+  background:var(--paper-2);border:1px solid var(--rule);
+  padding:14px 15px;cursor:pointer;font-size:14.5px;line-height:1.65;
+  transition:border-color .16s,background .16s;
+}
+.item label:active{transform:translateY(1px)}
+.box{
+  flex:none;width:19px;height:19px;border:1.5px solid var(--ink-3);
+  margin-top:3px;position:relative;transition:all .16s;
+}
+.item input:checked + label{border-color:var(--seal);background:var(--paper)}
+.item input:checked + label .box{background:var(--seal);border-color:var(--seal)}
+.item input:checked + label .box::after{
+  content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+  border:solid var(--seal-ink);border-width:0 2px 2px 0;transform:rotate(42deg);
+}
+.item input:focus-visible + label{outline:2px solid var(--seal);outline-offset:2px}
+
+.act{margin:22px 0 0;display:flex;flex-direction:column;gap:10px}
+button.go{
+  font-family:"Noto Serif TC",serif;font-size:17px;font-weight:700;letter-spacing:.1em;
+  background:var(--seal);color:var(--seal-ink);border:none;
+  padding:15px;cursor:pointer;width:100%;transition:opacity .16s;
+}
+button.go:hover{opacity:.9}
+button.go:disabled{opacity:.35;cursor:default}
+button.go:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.reset{
+  background:none;border:none;color:var(--ink-3);font-size:13px;
+  cursor:pointer;padding:4px;text-decoration:underline;text-underline-offset:3px;
+  font-family:inherit;
+}
+
+/* ── 結果 ── */
+.result{
+  margin:26px 0 0;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);
+  padding:24px 0;display:none;
+}
+.result.on{display:block;animation:rise .45s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.result.on{animation:none}}
+.r-count{
+  font-family:"Noto Serif TC",serif;font-size:13px;color:var(--seal);
+  letter-spacing:.22em;margin:0 0 12px;
+}
+.r-head{
+  font-family:"Noto Serif TC",serif;font-size:23px;font-weight:900;
+  line-height:1.45;margin:0 0 14px;text-wrap:balance;
+}
+.r-body{font-size:14.5px;color:var(--ink-2);margin:0 0 16px}
+.r-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:13px}
+.r-list li{font-size:14px;line-height:1.72;padding-left:15px;border-left:2px solid var(--rule)}
+.r-list b{font-weight:700;color:var(--ink);display:block;margin-bottom:1px;font-size:14.5px}
+.r-foot{
+  font-family:"Noto Serif TC",serif;font-size:15px;margin:20px 0 0;
+  color:var(--ink);line-height:1.7;
+}
+
+/* ── 連結 ── */
+.links{margin:34px 0 0}
+.l-head{
+  font-family:"Noto Serif TC",serif;font-size:14px;letter-spacing:.2em;
+  color:var(--ink-3);margin:0 0 14px;text-align:center;
+}
+.l-head span{background:var(--paper);padding:0 12px}
+.l-head{position:relative}
+.l-head::before{
+  content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--rule);z-index:-1;
+}
+.l-grid{display:flex;flex-direction:column;gap:9px}
+a.link{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  border:1px solid var(--rule);background:var(--paper-2);
+  padding:15px 17px;text-decoration:none;color:var(--ink);
+  transition:border-color .16s,transform .16s;
+}
+a.link:hover{border-color:var(--seal)}
+a.link:active{transform:translateY(1px)}
+a.link:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.l-main{font-family:"Noto Serif TC",serif;font-size:16px;font-weight:700;display:block}
+.l-sub{font-size:12.5px;color:var(--ink-3);display:block;margin-top:2px}
+.arrow{color:var(--seal);font-size:17px;flex:none}
+
+/* ── 印章 ── */
+.seal{
+  margin:36px auto 0;width:56px;height:56px;background:var(--seal);
+  color:var(--seal-ink);font-family:"Noto Serif TC",serif;font-weight:700;
+  display:grid;grid-template-columns:1fr 1fr;place-items:center;
+  font-size:15px;line-height:1;padding:7px;letter-spacing:0;
+}
+footer{text-align:center;margin:16px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.8}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="frame"></div>
+  <p class="kicker">空 間 觀 察</p>
+  <h1>不帶羅盤的風水師</h1>
+  <p class="who">王旭 Neo ｜ 建築結構診斷 ‧ 空間心理觀察</p>
+  <p class="creed">不算命，只觀察。</p>
+</header>
+
+<main>
+  <section class="quiz" aria-labelledby="quiz-title">
+    <p class="q-lead" id="quiz-title">讓我看你房間三秒。</p>
+    <p class="q-sub">下面八件事，勾出現在你家真的有的。三十秒，不用留任何資料。</p>
+
+    <ul class="items">
+      <li class="item">
+        <input type="checkbox" id="c1" data-k="desk">
+        <label for="c1"><span class="box" aria-hidden="true"></span><span>書桌角落堆著幾張還沒處理的發票或收據</span></label>
+      </li>
+      <li class="item">
+        <input type="checkbox" id="c2" data-k="mat">
+        <label for="c2"><span class="box" aria-hidden="true"></span><span>地板上的瑜珈墊，已經變成另一種置物架</span></label>
+      </li>
+      <li class="item">
+        <input type="checkbox" id="c3" data-k="bed">
+        <label for="c3"><span class="box" aria-hidden="true"></span><span>洗好的乾淨衣服收進來了，卻在床上陪你睡了一晚</span></label>
+      </li>
+      <li class="item">
+        <input type="checkbox" id="c4" data-k="night">
+        <label for="c4"><span class="box" aria-hidden="true"></span><span>床頭櫃上散落著沒蓋好的護手霜或藥膏</span></label>
+      </li>
+      <li class="item">
+        <input type="checkbox" id="c5" data-k="fridge">
+        <label for="c5"><span class="box" aria-hidden="true"></span><span>冰箱門貼著至少一張早就過期的單子</span></label>
+      </li>
+      <li class="item">
+        <input type="checkbox" id="c6" data-k="entry">
+        <label for="c6"><span class="box" aria-hidden="true"></span><span>玄關的鞋子多到進門要側身跨過去</span></label>
+      </li>
+      <li class="item">
+        <input type="checkbox" id="c7" data-k="corner">
+        <label for="c7"><span class="box" aria-hidden="true"></span><span>家裡有一個角落，你待不到五分鐘就想離開</span></label>
+      </li>
+      <li class="item">
+        <input type="checkbox" id="c8" data-k="light">
+        <label for="c8"><span class="box" aria-hidden="true"></span><span>晚上回家，第一個動作是打開最亮的那盞燈</span></label>
+      </li>
+    </ul>
+
+    <div class="act">
+      <button class="go" id="go" disabled>看看房間替我記了什麼</button>
+      <button class="reset" id="reset" hidden>重新勾一次</button>
+    </div>
+
+    <div class="result" id="result" role="status" aria-live="polite"></div>
+  </section>
+
+  <nav class="links" aria-label="其他連結">
+    <p class="l-head"><span>每天一條居住規矩</span></p>
+    <div class="l-grid">
+      <a class="link" href="https://www.youtube.com/channel/UCtXwlPAfL4CniTGwWOqzwBA" target="_blank" rel="noopener">
+        <span><span class="l-main">YouTube 主頻道</span><span class="l-sub">把老祖宗的規矩，翻成環境心理學</span></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="link" href="https://www.threads.com/@archsunneo" target="_blank" rel="noopener">
+        <span><span class="l-main">Threads</span><span class="l-sub">@archsunneo ‧ 每天拆一條</span></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="link" href="https://www.instagram.com/archsunneo/" target="_blank" rel="noopener">
+        <span><span class="l-main">Instagram</span><span class="l-sub">@archsunneo ‧ 空間觀察圖譜</span></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </nav>
+
+  <!--
+    尚未上線、刻意不放假連結的位置：
+    1. LINE 官方帳號 —— 引流用線正在開，開好後在這裡加一張卡（私域收口）
+    2. 食運（五行抽卡）—— C:\程式開發\風水卡牌生成，純靜態、可直接部署，但目前沒有公開網址
+    3. AI 風水戶型圖 —— 有產品有定價，但沒有金流也沒部署
+    規矩：沒有真的能點的東西之前，這裡不掛按鈕。連到死路比少一個連結更傷。
+  -->
+</main>
+
+<div class="seal" aria-label="印章：空間觀察">
+  <span>空</span><span>間</span><span>觀</span><span>察</span>
+</div>
+<footer>
+  這個自測只做觀察，不做預測。<br>結果只在你的手機上計算，不會傳送到任何地方。
+</footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  // 每一條都對應頻道實際發過的內容,不是新編的說法。
+  var READ = {
+    desk:{t:"書桌角的那疊紙",d:"那不是懶。那是一批「需要做決定」的小事被按了暫停鍵，而大腦每次經過都會重新掃描一次。"},
+    mat:{t:"變成置物架的瑜珈墊",d:"你對生活還有期待，只是這陣子的體力趕不上意志力。它還在原地，表示你還沒放棄那件事。"},
+    bed:{t:"在床上過夜的乾淨衣服",d:"不是不愛整潔。是今天對外的責任感已經全部用完了，回到家就一格都不剩。"},
+    night:{t:"沒蓋好的護手霜",d:"你在找一點伸手就拿得到的安慰，好讓緊繃的那條神經稍微降落。"},
+    fridge:{t:"冰箱門上的過期單子",d:"冰箱門不是收納，是一種「我有在處理生活」的儀式感。貼上去的當下就安心了，之後通常還是會忘。"},
+    entry:{t:"要側身跨過的玄關",d:"回家的第一個動作變成障礙賽，放鬆的開關就往後延了幾秒。那幾秒每天都在累積。"},
+    corner:{t:"待不到五分鐘的角落",d:"那裡通常有一個你意識不到的壓力源——尖角、低頻噪音、潮味。它一直都在，每天只扣你一點電。"},
+    light:{t:"進門先開最亮的燈",d:"你在用亮度確認「這裡是安全的」。身體確認完環境，疲憊的神經才肯發出可以休息的訊號。"}
+  };
+  var LEVEL = [
+    {max:0,h:"你家現在，是接得住你的。",b:"八件事一件都沒中。這不常見——通常表示你最近有餘裕，而且那份餘裕正被好好維持著。"},
+    {max:2,h:"大致穩，只有一兩處在小聲耗電。",b:"這個量級是正常的生活痕跡，不用大改。挑下面最容易的那一件，今晚花三分鐘處理掉就好。"},
+    {max:4,h:"你的房間，正在替你記帳。",b:"這些痕跡不是懶惰，是這陣子的取捨留下的。它們共通的地方是：每一件都在你意識不到的地方，持續佔用一點注意力。"},
+    {max:6,h:"你最近，把力氣都花在外面了。",b:"中到這個數量，通常不是空間出問題，是人先累了。房間只是誠實地把它顯示出來。先別想整理，先想哪一件最吵。"},
+    {max:8,h:"這不是家亂，是你已經撐很久了。",b:"八件裡中超過六件的人，多半不是不會整理，是連做決定的力氣都用完了。不用一次收拾完——挑一件，只挑一件。"}
+  ];
+
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('.item input'));
+  var go = document.getElementById('go');
+  var reset = document.getElementById('reset');
+  var out = document.getElementById('result');
+
+  function checked(){ return boxes.filter(function(b){ return b.checked; }); }
+  function sync(){ go.disabled = false; }
+  boxes.forEach(function(b){ b.addEventListener('change', sync); });
+  sync();
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  go.addEventListener('click', function(){
+    var hit = checked();
+    var n = hit.length;
+    var lv = LEVEL.find(function(x){ return n <= x.max; }) || LEVEL[LEVEL.length-1];
+    var html = '<p class="r-count">中了 ' + n + ' ／ 8</p>' +
+               '<h2 class="r-head">' + esc(lv.h) + '</h2>' +
+               '<p class="r-body">' + esc(lv.b) + '</p>';
+    if (n) {
+      html += '<ul class="r-list">';
+      hit.forEach(function(b){
+        var r = READ[b.getAttribute('data-k')];
+        html += '<li><b>' + esc(r.t) + '</b>' + esc(r.d) + '</li>';
+      });
+      html += '</ul>';
+    }
+    html += '<p class="r-foot">房間不會告你的狀，它只是幫你把日子記了帳。<br>' +
+            '這不是算命——上面每一條，都是你自己留下的痕跡。</p>';
+    out.innerHTML = html;
+    out.classList.add('on');
+    reset.hidden = false;
+    out.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  reset.addEventListener('click', function(){
+    boxes.forEach(function(b){ b.checked = false; });
+    out.classList.remove('on');
+    out.innerHTML = '';
+    reset.hidden = true;
+    sync();
+    document.getElementById('quiz-title').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+})();
+</script>
+</body>
+</html>
