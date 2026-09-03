@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>查你家財位 2026 ｜ 用衛星圖定位，不靠手機指南針</title>
+<meta name="description" content="免費線上工具：用地圖／衛星影像對齊你家建築坐向，算出 24 山坐向與 2026 流年九宮飛星八方位。不需下載 App、不用手機指南針。">
+<meta property="og:title" content="查你家財位 2026｜衛星圖定位版">
+<meta property="og:description" content="手機指南針會被鋼筋、電線、手機殼磁鐵拉走。這個工具改用衛星圖對齊屋頂，算 24 山坐向與流年飛星。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314110d'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23e0b45a' stroke-width='2'/%3E%3Cpath d='M16 5 L16 27 M5 16 L27 16' stroke='%23e0b45a' stroke-width='1.4'/%3E%3Ccircle cx='16' cy='16' r='2.6' fill='%23a8321f'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">@archsunneo</span>
+    <span class="brand-sep">·</span>
+    <span class="brand-name">查你家財位</span>
+  </div>
+  <a class="topbar-cta" href="https://line.me/R/ti/p/@489kaxmn" target="_blank" rel="noopener">加 Line 問王旭</a>
+</header>
+
+<section class="hero">
+  <h1>查你家<em>財位</em>——用衛星圖，不用手機指南針</h1>
+  <p class="hero-sub">
+    手機指南針在室內會被鋼筋、配電箱、冰箱、手機殼磁扣拉偏，誤差常常十幾度起跳；
+    <strong>差 15 度就跨過一個「山」，坐向整個換人。</strong>
+    這裡改成從天上看：把你家屋頂在衛星圖上框出來，直接量建築物本身的角度。
+  </p>
+  <ol class="hero-steps">
+    <li><b>1</b> 搜「區＋路名」找到你家那條街，把紅點拖到自家屋頂正中央</li>
+    <li><b>2</b> 沿著「大門那面牆」點兩下，自動對齊坐向</li>
+    <li><b>3</b> 看 2026 八方位吉凶，把家具往對的地方擺</li>
+  </ol>
+</section>
+
+<main class="app">
+
+  <!-- ============ 地圖 ============ -->
+  <div class="map-wrap">
+    <div id="map"></div>
+
+    <div class="search-bar">
+      <input id="addr" type="search" placeholder="輸入地址或路名，例如：信義區市府路" autocomplete="off">
+      <button id="searchBtn" type="button">搜尋</button>
+      <button id="geoBtn" type="button" title="用目前位置">定位</button>
+    </div>
+    <div id="searchResults" class="search-results" hidden></div>
+
+    <div class="map-hint" id="mapHint">拖動中央的紅點，對準你家<b>屋頂正中心</b></div>
+
+    <div class="layer-switch">
+      <button type="button" data-layer="photo" class="on">衛星影像</button>
+      <button type="button" data-layer="emap">通用電子地圖</button>
+      <button type="button" data-layer="osm">街道圖</button>
+    </div>
+  </div>
+
+  <!-- ============ 控制列 ============ -->
+  <div class="controls">
+    <div class="ctrl-block">
+      <div class="ctrl-head">
+        <span class="ctrl-title">建築坐向對齊</span>
+        <span class="ctrl-val"><b id="facingVal">180</b>°（向）</span>
+      </div>
+      <div class="align-row">
+        <button id="alignBtn" type="button" class="btn-align">沿牆點兩下自動對齊</button>
+        <button id="flipBtn" type="button" class="btn-ghost">翻轉 180°</button>
+      </div>
+      <div id="alignTip" class="align-tip" hidden></div>
+      <label class="slider-row">
+        <span>手動微調</span>
+        <input id="facing" type="range" min="0" max="359" step="1" value="180">
+      </label>
+      <div class="nudge">
+        <button type="button" data-nudge="-5">−5°</button>
+        <button type="button" data-nudge="-1">−1°</button>
+        <button type="button" data-nudge="1">+1°</button>
+        <button type="button" data-nudge="5">+5°</button>
+      </div>
+    </div>
+
+    <div class="ctrl-block">
+      <div class="ctrl-head">
+        <span class="ctrl-title">九宮範圍</span>
+        <span class="ctrl-val"><b id="radiusVal">25</b> 公尺</span>
+      </div>
+      <label class="slider-row">
+        <span>依你家大小調整</span>
+        <input id="radius" type="range" min="6" max="120" step="1" value="25">
+      </label>
+      <label class="check-row">
+        <input id="show24" type="checkbox" checked>
+        <span>顯示 24 山刻度</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ============ 結果 ============ -->
+  <section class="result" id="result">
+    <div class="sitting">
+      <div class="sitting-main">
+        <span class="sit-label">坐</span><span class="sit-mtn" id="sitMtn">—</span>
+        <span class="sit-arrow">→</span>
+        <span class="sit-label">向</span><span class="sit-mtn" id="faceMtn">—</span>
+      </div>
+      <div class="sitting-sub" id="sittingSub">尚未設定坐向</div>
+    </div>
+
+    <h2 class="sec-title">2026 丙午年 · 九宮飛星八方位</h2>
+    <p class="sec-note">中宮一白入中，順飛。以下為<strong>絕對方位</strong>（真北為準），與你家轉幾度無關；坐向決定的是格局，方位決定的是今年動哪裡。</p>
+    <div class="grid9" id="grid9"></div>
+
+    <div class="star-list" id="starList"></div>
+  </section>
+
+  <!-- ============ 收口 ============ -->
+  <section class="cta">
+    <h2>工具給你方位，<br>但你家實際哪裡在漏——要人看。</h2>
+    <p>
+      這張圖算得出「今年八白財星在東」，算不出你家東邊那面牆後面是廁所、
+      算不出你玄關一開門就對到樓梯、算不出你床頭壓在哪根樑下。
+      這些都要看照片、看格局圖才知道。
+    </p>
+    <p class="cta-do"><b>把這三張傳給我就好：</b>大門往內拍一張、客廳全景一張、房屋平面圖或這頁的截圖一張。</p>
+    <a class="cta-btn" href="https://line.me/R/ti/p/@489kaxmn" target="_blank" rel="noopener">
+      加 Line 傳照片給王旭
+      <small>199 元真人看圖分析</small>
+    </a>
+    <a class="cta-alt" href="https://archsunneo.github.io/" target="_blank" rel="noopener">
+      → 還沒想好要問什麼？先做「你家漏財體質」測驗
+    </a>
+    <div class="cta-brand">@archsunneo</div>
+  </section>
+
+  <footer class="foot">
+    <details>
+      <summary>為什麼不要用手機指南針量坐向？</summary>
+      <p>
+        手機的磁力計量的是「當下這個位置的磁場」，不是純地磁。站在室內，鋼筋、電梯機房、配電箱、
+        冰箱壓縮機、喇叭、無線充電板、含磁扣的手機殼，都會把讀數拉走；同一間客廳走三步，讀數差十度是常事。
+        風水的 24 山每一山只有 15 度，量錯一格，坐向就換一個。
+        用衛星影像量的是<strong>建築物本身的幾何角度</strong>，它不受磁場影響，也不會因為你站哪裡而改變。
+      </p>
+    </details>
+    <details>
+      <summary>為什麼搜地址搜不到我家門牌？</summary>
+      <p>
+        因為這個工具用的是免費開放地圖（OpenStreetMap）的地址資料，台灣的門牌在上面很不完整——
+        實測「台北市信義區市府路1號」查得到 0 筆，但「信義區市府路」查得到。
+        所以搜尋只負責把你載到<strong>你家那條路</strong>，最後一哩要你自己把紅點拖到屋頂。
+        這其實比較準：只有你知道哪一棟是你家、哪一面是大門。
+      </p>
+    </details>
+    <details>
+      <summary>這個工具怎麼算的？</summary>
+      <p>
+        坐向：把 360 度切成 24 等分（每山 15 度），子山起於正北，依序 子癸丑艮寅甲卯乙辰巽巳丙午丁未坤申庚酉辛戌乾亥壬。
+        你在圖上定的角度是「向」，「坐」為向 +180 度。<br>
+        流年飛星：年紫白以「11 −（西元年數字和化為個位）」定中宮。2026 年 → 2+0+2+6=10 → 1，11−1=10 → 一白入中宮，
+        再依洛書順飛九宮，得出本頁的固定對照表（查表，不隨機、不亂數）。
+      </p>
+    </details>
+    <p class="disclaim">
+      本工具為免費民俗參考，屬玄學範疇，<strong>不構成投資、財務、醫療或工程建議，也不保證任何財運結果</strong>。
+      地圖資料來源：OpenStreetMap 貢獻者、內政部國土測繪中心；地址搜尋由 OpenStreetMap Nominatim 提供。
+      本站純前端執行，不設帳號、不上傳、不儲存你的地址。
+    </p>
+  </footer>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
