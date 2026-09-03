@@ -199,6 +199,21 @@ h1,h2,.sit-mtn,.cell-star{font-family:"Noto Serif TC","Noto Sans TC",serif}
 .star-item h3 span{font-size:12px;color:var(--ink-3);font-weight:400;margin-left:6px}
 .star-item p{margin:0;font-size:13.5px;color:var(--ink-2)}
 
+.share{margin-top:30px}
+.share-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.btn-card{
+  border:0;background:var(--ink);color:var(--gold-2);font:inherit;font-weight:700;font-size:15px;
+  padding:12px 22px;border-radius:10px;cursor:pointer;box-shadow:var(--shadow);
+}
+.btn-card:disabled{opacity:.6;cursor:progress}
+.btn-dl{
+  display:inline-flex;align-items:center;background:var(--gold-2);color:var(--ink);
+  text-decoration:none;font-weight:700;font-size:15px;padding:12px 22px;border-radius:10px;
+}
+.card-wrap{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:10px;box-shadow:var(--shadow)}
+.card-wrap img{display:block;width:100%;height:auto;border-radius:8px}
+.card-hint{margin:8px 2px 2px;font-size:12.5px;color:var(--ink-3)}
+
 /* ---------- cta ---------- */
 .cta{
   margin-top:34px;background:var(--ink);color:#f2ead9;

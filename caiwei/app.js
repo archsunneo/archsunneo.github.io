@@ -623,3 +623,184 @@ $('radiusVal').textContent = state.radius;
 setHint();
 refreshOverlay();
 render();
+
+/* ---------------------------------------------------------------------
+   11. 分享結果卡（純前端 canvas，不上傳、不經過任何伺服器）
+
+   為什麼卡片主打「坐向」而不是「財位在哪」：
+   2026 的飛星八方位是絕對方位，每個人都一樣（財庫都在東），
+   拿那個當結果卡沒有個人化、也沒人想轉。真正因人而異的是
+   「你家坐什麼朝什麼、大門正對到哪一顆流年星」——那才值得轉。
+   ------------------------------------------------------------------ */
+
+var SERIF_STACK = '"Noto Serif TC","Microsoft JhengHei","PingFang TC",serif';
+var SANS_STACK  = '"Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif';
+
+var CARD_COLOR = {
+  ink:'#14110d', gold:'#e0b45a', goldDeep:'#b8892b',
+  red:'#a8321f', paper:'#f4ece0', muted:'#a4977f'
+};
+var CARD_LV = { great:'#e0b45a', good:'#6aa77f', bad:'#8b8073', worst:'#c9503a' };
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y,     x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x,     y + h, r);
+  ctx.arcTo(x,     y + h, x,     y,     r);
+  ctx.arcTo(x,     y,     x + w, y,     r);
+  ctx.closePath();
+}
+
+function drawShareCard(){
+  var W = 1080, H = 1350;
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var g = cv.getContext('2d');
+
+  var face = state.facing, sit = norm360(face + 180);
+  var faceM = mountainName(face), sitM = mountainName(sit);
+  var fD = DIRS[dirIndex(face)], sD = DIRS[dirIndex(sit)];
+  var faceStar = STARS[FLYING[dirIndex(face)]];
+
+  // 底
+  g.fillStyle = CARD_COLOR.ink; g.fillRect(0, 0, W, H);
+  var rad = g.createRadialGradient(W / 2, -120, 60, W / 2, 420, 900);
+  rad.addColorStop(0, '#241d14'); rad.addColorStop(1, CARD_COLOR.ink);
+  g.fillStyle = rad; g.fillRect(0, 0, W, H);
+  g.strokeStyle = 'rgba(224,180,90,.24)'; g.lineWidth = 2;
+  roundRect(g, 22, 22, W - 44, H - 44, 10); g.stroke();
+
+  // 中央單層浮水印（被裁掉邊角仍在；刻意不做四角印記，那會讀成農場傳單）
+  g.save();
+  g.translate(W / 2, H / 2); g.rotate(-24 * Math.PI / 180);
+  // 這張卡中央就是輪盤，浮水印比貼文卡再淡一級，才不會吃掉方位標籤
+  g.globalAlpha = 0.055; g.fillStyle = CARD_COLOR.gold;
+  g.font = '900 132px ' + SANS_STACK;
+  g.textAlign = 'center'; g.fillText('@archsunneo', 0, 46);
+  g.restore(); g.globalAlpha = 1; g.textAlign = 'left';
+
+  // 頁首
+  g.textBaseline = 'alphabetic';
+  g.fillStyle = CARD_COLOR.goldDeep;
+  g.font = '700 25px ' + SANS_STACK;
+  g.fillText('不帶羅盤的風水師 · 王旭 Neo', 56, 82);
+
+  g.fillStyle = CARD_COLOR.paper;
+  g.font = '900 44px ' + SERIF_STACK;
+  g.fillText('我家的 2026 方位圖', 56, 148);
+
+  // 坐向（這張卡真正個人化的部分）
+  g.fillStyle = CARD_COLOR.gold;
+  g.font = '900 92px ' + SERIF_STACK;
+  g.fillText('坐' + sD.name + '朝' + fD.name, 56, 250);
+  g.fillStyle = CARD_COLOR.muted;
+  g.font = '600 30px ' + SANS_STACK;
+  g.fillText(sitM + '山' + faceM + '向 · ' + sD.gua + '宅 · 向 ' + face + '°', 58, 296);
+
+  // 說明 + 壓線警告（工具上會警告，卡片就不能不講——否則對外少講一句）
+  g.fillStyle = CARD_COLOR.muted;
+  g.font = '400 24px ' + SANS_STACK;
+  g.fillText('八方位以真北為準；房子轉幾度不影響方位，只影響坐向。', 58, 348);
+
+  var gap = boundaryGap(face);
+  if (gap < 1.5){
+    g.fillStyle = '#e8a696';
+    g.font = '700 24px ' + SANS_STACK;
+    g.fillText('⚠ 這個角度離「山」的分界只有 ' + gap.toFixed(1) + '°，換一山結果就不同——建議找人實測。', 58, 388);
+  }
+
+  // 八方位輪盤
+  var cx = W / 2, cy = 700, R = 248;
+  for (var i = 0; i < 8; i++){
+    var s = STARS[FLYING[i]], mid = DIRS[i].mid;
+    var a0 = (mid - 22.5 - 90) * Math.PI / 180;
+    var a1 = (mid + 22.5 - 90) * Math.PI / 180;
+    g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, R, a0, a1); g.closePath();
+    g.fillStyle = CARD_LV[s.lv];
+    g.globalAlpha = s.lv === 'great' ? 0.34 : (s.lv === 'worst' ? 0.30 : 0.16);
+    g.fill(); g.globalAlpha = 1;
+    g.strokeStyle = 'rgba(224,180,90,.35)'; g.lineWidth = 1.5; g.stroke();
+
+    var lr = (mid - 90) * Math.PI / 180, lx = cx + Math.cos(lr) * R * 0.66, ly = cy + Math.sin(lr) * R * 0.66;
+    g.textAlign = 'center';
+    g.fillStyle = CARD_COLOR.paper; g.font = '900 27px ' + SERIF_STACK;
+    g.fillText(DIRS[i].name, lx, ly - 6);
+    g.fillStyle = CARD_LV[s.lv] === CARD_LV.bad ? CARD_COLOR.muted : CARD_LV[s.lv];
+    g.font = '700 22px ' + SANS_STACK;
+    g.fillText(s.n, lx, ly + 22);
+    g.font = '700 19px ' + SANS_STACK;
+    g.fillText(s.tag, lx, ly + 46);
+    g.textAlign = 'left';
+  }
+  g.strokeStyle = 'rgba(224,180,90,.5)'; g.lineWidth = 2;
+  g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke();
+
+  // 大門朝向箭頭
+  var fr = (face - 90) * Math.PI / 180;
+  var tipX = cx + Math.cos(fr) * (R + 34), tipY = cy + Math.sin(fr) * (R + 34);
+  g.strokeStyle = CARD_COLOR.red; g.lineWidth = 8; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(cx, cy); g.lineTo(tipX, tipY); g.stroke();
+  g.fillStyle = CARD_COLOR.red;
+  g.beginPath(); g.arc(cx, cy, 12, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(tipX, tipY, 15, 0, Math.PI * 2); g.fill();
+  g.fillStyle = CARD_COLOR.paper; g.font = '900 22px ' + SANS_STACK;
+  g.textAlign = 'center';
+  g.fillText('向', tipX, tipY + 8);
+  g.textAlign = 'left';
+
+  // 大門正對哪顆星
+  var boxY = 1010, boxH = 128;
+  var worst = (faceStar.lv === 'worst' || faceStar.lv === 'bad');
+  g.fillStyle = worst ? 'rgba(168,50,31,.16)' : 'rgba(224,180,90,.12)';
+  roundRect(g, 56, boxY, W - 112, boxH, 12); g.fill();
+  g.strokeStyle = worst ? CARD_COLOR.red : CARD_COLOR.gold; g.lineWidth = 2; g.stroke();
+  g.fillStyle = worst ? '#d0442a' : CARD_COLOR.goldDeep;
+  g.font = '700 22px ' + SANS_STACK;
+  g.fillText('大 門 正 對 這 一 面 ， 今 年 是', 82, boxY + 44);
+  g.fillStyle = worst ? '#e8a696' : CARD_COLOR.gold;
+  g.font = '900 46px ' + SERIF_STACK;
+  g.fillText(faceStar.full + '（' + faceStar.tag + '）', 82, boxY + 98);
+
+  // 頁尾
+  g.fillStyle = CARD_COLOR.gold;
+  roundRect(g, 56, 1168, W - 112, 78, 12); g.fill();
+  g.fillStyle = CARD_COLOR.ink;
+  g.font = '900 32px ' + SERIF_STACK;
+  g.fillText('查你家財位 · 衛星圖版', 82, 1218);
+  g.font = '700 26px ' + SANS_STACK;
+  g.textAlign = 'right'; g.fillText('archsunneo.github.io/caiwei', W - 82, 1218); g.textAlign = 'left';
+
+  g.fillStyle = CARD_COLOR.muted; g.font = '400 21px ' + SANS_STACK;
+  g.fillText('民俗參考，不保證任何財運結果', 56, 1290);
+  g.fillStyle = CARD_COLOR.gold; g.font = '700 22px ' + SANS_STACK;
+  g.textAlign = 'right'; g.fillText('@archsunneo', W - 56, 1290); g.textAlign = 'left';
+
+  return cv;
+}
+
+$('makeCard').addEventListener('click', function(){
+  var btn = this;
+  btn.disabled = true;
+  btn.textContent = '產生中…';
+
+  var go = function(){
+    try {
+      var cv = drawShareCard();
+      var url = cv.toDataURL('image/png');
+      $('cardImg').src = url;
+      $('cardWrap').hidden = false;
+      var dl = $('dlCard');
+      dl.href = url; dl.hidden = false;
+      btn.textContent = '重新產生（改完坐向再按一次）';
+      $('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (err) {
+      btn.textContent = '產生失敗：' + (err && err.message ? err.message : '未知錯誤');
+    }
+    btn.disabled = false;
+  };
+
+  // 等字型就緒再畫，否則 canvas 會用 fallback 字，字重跑掉
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(go);
+  else go();
+});
