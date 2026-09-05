@@ -140,10 +140,10 @@ var NLSC_ATTR = '圖磚：<a href="https://maps.nlsc.gov.tw/">內政部國土測
 
 var layers = {
   photo: L.tileLayer('https://wmts.nlsc.gov.tw/wmts/PHOTO2/default/GoogleMapsCompatible/{z}/{y}/{x}', {
-    maxZoom: 21, maxNativeZoom: 20, attribution: NLSC_ATTR + '（正射影像）'
+    maxZoom: 21, maxNativeZoom: 19, attribution: NLSC_ATTR + '（正射影像）'
   }),
   emap: L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
-    maxZoom: 21, maxNativeZoom: 20, attribution: NLSC_ATTR + '（通用電子地圖）'
+    maxZoom: 21, maxNativeZoom: 19, attribution: NLSC_ATTR + '（通用電子地圖）'
   }),
   osm: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19, attribution: OSM_ATTR
