@@ -78,6 +78,26 @@ function boundaryGap(deg){
   return Math.min(x, 15 - x);
 }
 
+// 磁偏角（約值）：衛星圖量到的是「真北」角度，羅盤與手機指南針看到的是「磁北」。
+// 東偏為正、西偏為負。羅盤角度 = 真北角度 − 磁偏角。
+// 數值為 2025–2026 年的粗略區域值（未逐點核實），只用來提醒壓線風險，不是精密校正。
+var DECLINATION_TABLE = [
+  { name: '台灣', lat: [21.5, 26.5], lng: [119, 123],   d: -4.6 },
+  { name: '香港／廣東', lat: [21, 24.5], lng: [111.5, 116], d: -3.4 },
+  { name: '華東（上海一帶）', lat: [27.5, 33.5], lng: [117.5, 123], d: -6.0 },
+  { name: '日本', lat: [30, 46], lng: [129, 146],       d: -8.0 },
+  { name: '新加坡／馬來西亞', lat: [-2, 7.5], lng: [99, 105], d: 0.2 },
+  { name: '澳門', lat: [22, 22.3], lng: [113.5, 113.7], d: -3.4 }
+];
+function declinationFor(lat, lng){
+  for (var i = 0; i < DECLINATION_TABLE.length; i++){
+    var t = DECLINATION_TABLE[i];
+    if (lat >= t.lat[0] && lat <= t.lat[1] && lng >= t.lng[0] && lng <= t.lng[1]) return { d: t.d, name: t.name };
+  }
+  return { d: 0, name: '' };
+}
+function compassDeg(trueDeg, decl){ return norm360(trueDeg - decl); }
+
 var R_EARTH = 6378137;
 var D2R = Math.PI / 180, R2D = 180 / Math.PI;
 
@@ -554,7 +574,10 @@ $('geoBtn').addEventListener('click', function(){
    ------------------------------------------------------------------ */
 
 function render(){
-  var face = state.facing, sit = norm360(face + 180);
+  // 衛星圖量到的是真北角度；二十四山依羅盤慣例用磁北角度，所以先換算。
+  var decl = declinationFor(state.center.lat, state.center.lng);
+  var faceTrue = state.facing;
+  var face = compassDeg(faceTrue, decl.d), sit = norm360(face + 180);
   var faceM = mountainName(face), sitM = mountainName(sit);
   var faceD = DIRS[dirIndex(face)], sitD = DIRS[dirIndex(sit)];
 
@@ -563,10 +586,13 @@ function render(){
 
   var gap = boundaryGap(face);
   var sub = '坐' + sitD.name + '朝' + faceD.name +
-            '（' + sitM + '山' + faceM + '向 · ' + sitD.gua + '宅）　向 = ' + face + '°';
+            '（' + sitM + '山' + faceM + '向 · ' + sitD.gua + '宅）　向 = 羅盤約 ' + Math.round(face) + '°' +
+            '（衛星圖真北 ' + faceTrue + '°' + (decl.d ? '，' + decl.name + '磁偏約 ' + (decl.d < 0 ? '西 ' : '東 ') + Math.abs(decl.d) + '°，約值' : '，此地區磁偏未列，未換算') + '）';
   if (gap < 1.5){
     sub += '<br><span style="color:#e0b45a">⚠ 這個角度離「山」的分界只有 ' + gap.toFixed(1) +
            '°，屬於壓線／騎線，換一山吉凶就翻盤——這種情況務必找人實測，不要照本頁結論下決定。</span>';
+  } else if (boundaryGap(faceTrue) < 1.5 || gap < Math.abs(decl.d) + 1.5){
+    sub += '<br><span style="color:#e0b45a">⚠ 真北與羅盤角度差了幾度，剛好落在「山」的分界附近：帶羅盤的師傅和本頁可能給出不同的山。壓線就當兩山都算，別照單一結論下決定。</span>';
   }
   $('sittingSub').innerHTML = sub;
 
@@ -658,7 +684,8 @@ function drawShareCard(){
   cv.width = W; cv.height = H;
   var g = cv.getContext('2d');
 
-  var face = state.facing, sit = norm360(face + 180);
+  var decl = declinationFor(state.center.lat, state.center.lng);
+  var face = compassDeg(state.facing, decl.d), sit = norm360(face + 180);
   var faceM = mountainName(face), sitM = mountainName(sit);
   var fD = DIRS[dirIndex(face)], sD = DIRS[dirIndex(sit)];
   var faceStar = STARS[FLYING[dirIndex(face)]];
@@ -696,12 +723,12 @@ function drawShareCard(){
   g.fillText('坐' + sD.name + '朝' + fD.name, 56, 250);
   g.fillStyle = CARD_COLOR.muted;
   g.font = '600 30px ' + SANS_STACK;
-  g.fillText(sitM + '山' + faceM + '向 · ' + sD.gua + '宅 · 向 ' + face + '°', 58, 296);
+  g.fillText(sitM + '山' + faceM + '向 · ' + sD.gua + '宅 · 向 羅盤約 ' + Math.round(face) + '°', 58, 296);
 
   // 說明 + 壓線警告（工具上會警告，卡片就不能不講——否則對外少講一句）
   g.fillStyle = CARD_COLOR.muted;
   g.font = '400 24px ' + SANS_STACK;
-  g.fillText('八方位以真北為準；房子轉幾度不影響方位，只影響坐向。', 58, 348);
+  g.fillText('坐向已由衛星圖真北換算成羅盤角度（磁偏約值）；八方位以真北為準。', 58, 348);
 
   var gap = boundaryGap(face);
   if (gap < 1.5){
